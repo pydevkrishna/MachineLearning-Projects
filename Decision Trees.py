@@ -47,7 +47,8 @@ plt.figure(figsize=(20, 10))
 tree.plot_tree(dt_model, feature_names=['Amount', 'Time', 'Location'], 
                class_names=['Legitimate', 'Fraud'], filled=True, rounded=True)
 plt.title('Decision Tree for Credit Card Fraud Detection')
-plt.show()
+plt.show(block=False)  # Changed to non-blocking
+plt.pause(0.1)  # Added small pause
 
 # Step 8: Visualize feature importance
 feature_importance = pd.DataFrame({
@@ -61,7 +62,8 @@ plt.bar(feature_importance['Feature'], feature_importance['Importance'])
 plt.title('Feature Importance in Fraud Detection')
 plt.xlabel('Features')
 plt.ylabel('Importance')
-plt.show()
+plt.show(block=False)  # Changed to non-blocking
+plt.pause(0.1)  # Added small pause
 
 # Step 9: Make predictions for new transactions
 new_transactions = pd.DataFrame({
@@ -115,7 +117,8 @@ def predict_transaction():
             print("Please enter valid numbers!")
             
         if input("\nCheck another transaction? (y/n): ").lower() != 'y':
+            plt.close('all')  # Close all plots
             break
 
 # Uncomment the line below to run the interactive prediction system
-# predict_transaction()
+predict_transaction()  # Uncommented to make it run automatically

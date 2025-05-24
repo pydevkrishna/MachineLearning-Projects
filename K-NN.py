@@ -52,15 +52,17 @@ def get_movie_recommendations(movie_title):
     return recommended_movies
 
 # Step 6: Visualize the movie space
-plt.figure(figsize=(10, 6))
-plt.scatter(X['action'], X['romance'], c=X['comedy'], cmap='viridis')
-for i, title in enumerate(movies_df['title']):
-    plt.annotate(title, (X['action'][i], X['romance'][i]))
-plt.xlabel('Action Score')
-plt.ylabel('Romance Score')
-plt.title('Movie Space Visualization\n(Color represents Comedy Score)')
-plt.colorbar(label='Comedy Score')
-plt.show()
+def show_visualization():
+    plt.figure(figsize=(10, 6))
+    plt.scatter(X['action'], X['romance'], c=X['comedy'], cmap='viridis')
+    for i, title in enumerate(movies_df['title']):
+        plt.annotate(title, (X['action'][i], X['romance'][i]))
+    plt.xlabel('Action Score')
+    plt.ylabel('Romance Score')
+    plt.title('Movie Space Visualization\n(Color represents Comedy Score)')
+    plt.colorbar(label='Comedy Score')
+    plt.show(block=False)  # Changed to non-blocking
+    plt.pause(0.1)  # Added small pause
 
 # Step 7: Get recommendations for a sample movie
 sample_movie = 'The Matrix'
@@ -82,6 +84,7 @@ def recommend_movies():
     while True:
         movie = input("\nEnter a movie title (or 'quit' to exit): ")
         if movie.lower() == 'quit':
+            plt.close('all')  # Close all plots
             break
         if movie in movies_df['title'].values:
             recommendations = get_movie_recommendations(movie)
@@ -91,5 +94,7 @@ def recommend_movies():
         else:
             print("Movie not found. Please try again.")
 
-# Uncomment the line below to run the interactive recommendation system
-# recommend_movies()
+# Show visualization and run the interactive system
+if __name__ == "__main__":
+    show_visualization()
+    recommend_movies()

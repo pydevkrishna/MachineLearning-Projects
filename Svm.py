@@ -47,7 +47,8 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
 plt.title('Confusion Matrix')
 plt.ylabel('True Label')
 plt.xlabel('Predicted Label')
-plt.show()
+plt.show(block=False)
+plt.pause(0.1)
 
 # Step 9: Visualize feature importance
 # Get feature importance using coefficients
@@ -65,7 +66,8 @@ plt.xlabel('Features')
 plt.ylabel('Importance')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.show()
+plt.show(block=False)
+plt.pause(0.1)
 
 # Step 10: Make predictions for new cases
 # Create sample new cases
@@ -139,7 +141,8 @@ def predict_case():
             print("Please enter valid numbers!")
             
         if input("\nCheck another case? (y/n): ").lower() != 'y':
+            plt.close('all')
             break
 
-# Uncomment the line below to run the interactive prediction system
-# predict_case()
+# Run the interactive prediction system
+predict_case()

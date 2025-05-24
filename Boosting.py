@@ -48,7 +48,8 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
 plt.title('Confusion Matrix')
 plt.ylabel('True Label')
 plt.xlabel('Predicted Label')
-plt.show()
+plt.show(block=False)
+plt.pause(0.1)
 
 # Step 9: Visualize feature importance
 feature_importance = pd.DataFrame({
@@ -63,7 +64,8 @@ plt.bar(feature_importance['Pixel'][:20], feature_importance['Importance'][:20])
 plt.title('Top 20 Important Pixels')
 plt.xlabel('Pixel Index')
 plt.ylabel('Importance')
-plt.show()
+plt.show(block=False)
+plt.pause(0.1)
 
 # Step 10: Visualize some predictions
 def plot_predictions(X, y_true, y_pred, indices):
@@ -74,7 +76,8 @@ def plot_predictions(X, y_true, y_pred, indices):
         plt.title(f'True: {y_true[idx]}\nPred: {y_pred[idx]}')
         plt.axis('off')
     plt.tight_layout()
-    plt.show()
+    plt.show(block=False)
+    plt.pause(0.1)
 
 # Plot 5 random predictions
 random_indices = np.random.choice(len(X_test), 5, replace=False)
@@ -125,13 +128,15 @@ def predict_image():
             plt.imshow(np.array(pixels).reshape(8, 8), cmap='gray')
             plt.title(f'Predicted: {prediction}')
             plt.axis('off')
-            plt.show()
+            plt.show(block=False)
+            plt.pause(0.1)
             
         except ValueError as e:
             print(f"Error: {e}")
             
         if input("\nCheck another image? (y/n): ").lower() != 'y':
+            plt.close('all')
             break
 
-# Uncomment the line below to run the interactive prediction system
-# predict_image()
+# Run the interactive prediction system
+predict_image()

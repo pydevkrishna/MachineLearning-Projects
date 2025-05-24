@@ -50,7 +50,8 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
 plt.title('Confusion Matrix')
 plt.ylabel('True Label')
 plt.xlabel('Predicted Label')
-plt.show()
+plt.show(block=False)
+plt.pause(0.1)
 
 # Step 8: Visualize feature importance
 feature_importance = pd.DataFrame({
@@ -64,7 +65,8 @@ plt.bar(feature_importance['Feature'], feature_importance['Importance'])
 plt.title('Feature Importance in Fraud Detection')
 plt.xlabel('Features')
 plt.ylabel('Importance')
-plt.show()
+plt.show(block=False)
+plt.pause(0.1)
 
 # Step 9: Make predictions for new transactions
 new_transactions = pd.DataFrame({
@@ -118,7 +120,8 @@ def predict_transaction():
             print("Please enter valid numbers!")
             
         if input("\nCheck another transaction? (y/n): ").lower() != 'y':
+            plt.close()
             break
 
 # Uncomment the line below to run the interactive prediction system
-# predict_transaction()
+predict_transaction()

@@ -71,7 +71,8 @@ plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--')
 plt.xlabel('Actual Price')
 plt.ylabel('Predicted Price')
 plt.title('Actual vs Predicted House Prices')
-plt.show()
+plt.show(block=False)
+plt.pause(0.1)
 
 # Step 9: Visualize feature importance
 feature_importance = pd.DataFrame({
@@ -85,7 +86,8 @@ plt.bar(feature_importance['Feature'], feature_importance['Importance'])
 plt.title('Feature Importance in House Price Prediction')
 plt.xlabel('Features')
 plt.ylabel('Importance')
-plt.show()
+plt.show(block=False)
+plt.pause(0.1)
 
 # Step 10: Make predictions for new houses
 new_houses = pd.DataFrame({
@@ -146,7 +148,8 @@ def predict_house():
             print("Please enter valid numbers!")
             
         if input("\nCheck another house? (y/n): ").lower() != 'y':
+            plt.close('all')
             break
 
-# Uncomment the line below to run the interactive prediction system
-# predict_house()
+# Run the interactive prediction system
+predict_house()

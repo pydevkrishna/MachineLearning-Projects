@@ -79,7 +79,8 @@ plt.xlabel('Words')
 plt.ylabel('Spam Probability')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.show()
+plt.show(block=False)
+plt.pause(0.1)
 
 # Step 8: Make predictions for new emails
 new_emails = [
@@ -110,6 +111,7 @@ def check_email():
     while True:
         email = input("\nEnter an email to check (or 'quit' to exit): ")
         if email.lower() == 'quit':
+            plt.close('all')  # Close all plots
             break
             
         # Transform the email
@@ -135,5 +137,5 @@ def check_email():
             for word, prob in sorted(word_probs, key=lambda x: x[1], reverse=True):
                 print(f"- {word}: {prob:.2%}")
 
-# Uncomment the line below to run the interactive spam filter
-# check_email()
+# Run the interactive spam filter
+check_email()  # Uncommented to make it run automatically
