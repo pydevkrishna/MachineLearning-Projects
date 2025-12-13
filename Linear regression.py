@@ -1,85 +1,123 @@
 import pandas as pd
 import numpy as np
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 
-def show_visualization(X_test, y_test):
-    plt.figure(figsize=(10, 6))
-    plt.scatter(X_test['amount'], X_test['time'], 
-               c=y_test, cmap='coolwarm', alpha=0.6)
-    plt.xlabel('Transaction Amount')
-    plt.ylabel('Time of Transaction')
-    plt.title('Fraud Detection Results\n(Blue: Legitimate, Red: Fraud)')
-    plt.colorbar(label='Fraud Status')
-    plt.show(block=False)
-    plt.pause(0.1)
+# Step 1: Create a sample dataset of Stock Prices
+# In real life, you would use: df = quandl.get("WIKI/GOOGL")
+np.random.seed(42)
+days = 1000
 
-def main():
-    # Step 1: Create sample data
-    np.random.seed(42)
-    n_samples = 1000
-    data = {
-        'amount': np.random.uniform(10, 1000, n_samples),
-        'time': np.random.uniform(0, 24, n_samples),
-        'location': np.random.randint(1, 5, n_samples),
-        'is_fraud': np.random.randint(0, 2, n_samples)
-    }
-    df = pd.DataFrame(data)
+# Generate synthetic stock data (Random Walk)
+dates = pd.date_range(start='2020-01-01', periods=days)
+price = 100 + np.cumsum(np.random.randn(days))  # Base price 100
+volume = np.random.randint(1000, 10000, days)
+high_low_pct = np.abs(np.random.normal(0.02, 0.01, days))  # Volatility
+pct_change = np.random.normal(0.00, 0.01, days)            # Daily return
 
-    # Step 2: Prepare features and target
-    X = df[['amount', 'time', 'location']]
-    y = df['is_fraud']
+df = pd.DataFrame({
+    'Close': price,
+    'HL_PCT': high_low_pct,   # High-Low Percentage
+    'PCT_Change': pct_change, # Percentage Change
+    'Volume': volume
+}, index=dates)
 
-    # Step 3: Split the data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Step 2: Prepare features and labels
+# We want to predict the price 'n' days into the future
+forecast_out = 30 # Predict 30 days into future
+df['Prediction'] = df['Close'].shift(-forecast_out)
 
-    # Step 4: Create and train the model
-    model = LogisticRegression()
-    model.fit(X_train, y_train)
+# Features (X)
+X = np.array(df.drop(['Prediction'], axis=1))
+X = X[:-forecast_out] # Remove last 30 days (no target variable)
 
-    # Step 5: Make predictions
-    y_pred = model.predict(X_test)
+# Labels (y)
+y = np.array(df['Prediction'])
+y = y[:-forecast_out] # Remove last 30 days
 
-    # Step 6: Evaluate the model
-    accuracy = accuracy_score(y_test, y_pred)
-    print(f"Model Accuracy: {accuracy:.2f}")
-    print("\nDetailed Classification Report:")
-    print(classification_report(y_test, y_pred))
+# Step 3: Split the data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Step 7: Visualize the results
-    show_visualization(X_test, y_test)
+# Step 4: Scale the features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
 
-    # Step 8: Interactive prediction system
+# Step 5: Create and train the Linear Regression model
+lr_model = LinearRegression()
+lr_model.fit(X_train_scaled, y_train)
+
+# Step 6: Evaluate the model
+confidence = lr_model.score(X_test_scaled, y_test)
+print(f"Model Confidence (R² Score): {confidence:.2%}")
+
+# Step 7: Make predictions for the 'Future' (the last 30 days we excluded)
+X_future = np.array(df.drop(['Prediction'], axis=1))[-forecast_out:]
+X_future_scaled = scaler.transform(X_future)
+forecast_set = lr_model.predict(X_future_scaled)
+
+print("\nPredicted prices for the next 5 days:")
+print(forecast_set[:5])
+
+# Step 8: Visualize the results
+plt.figure(figsize=(12, 6))
+df['Forecast'] = np.nan
+
+# Mapping forecast to dates
+last_date = df.iloc[-forecast_out - 1].name
+last_unix = last_date.timestamp()
+one_day = 86400
+next_unix = last_unix + one_day
+
+for i in forecast_set:
+    next_date = pd.to_datetime(next_unix, unit='s')
+    df.loc[next_date] = [np.nan for _ in range(len(df.columns)-1)] + [i]
+    next_unix += one_day
+
+df['Close'].plot(label='Historical Close Price')
+df['Forecast'].plot(label='Forecast (30 days)', color='green')
+plt.legend(loc=4)
+plt.xlabel('Date')
+plt.ylabel('Price')
+plt.title('Stock Price Forecast (Linear Regression)')
+plt.show(block=False)
+plt.pause(0.1)
+
+# Step 9: Interactive prediction system
+def predict_price():
+    print("\nStock Price Prediction System")
+    print("-----------------------------")
+    
     while True:
         try:
-            print("\nEnter transaction details (or 'quit' to exit):")
-            amount = float(input("Amount: $"))
-            time = float(input("Time (0-24): "))
-            location = int(input("Location (1-4): "))
+            print("\nEnter market parameters:")
+            current_price = float(input("Current Close Price: $"))
+            volatility = float(input("High-Low Variance % (e.g., 0.02): "))
+            daily_change = float(input("Daily Change % (e.g., 0.01): "))
+            volume_input = float(input("Trading Volume: "))
             
-            if 0 <= time <= 24 and 1 <= location <= 4:
-                transaction = pd.DataFrame({
-                    'amount': [amount],
-                    'time': [time],
-                    'location': [location]
-                })
-                
-                prediction = model.predict(transaction)[0]
-                probability = model.predict_proba(transaction)[0][1]
-                
-                print(f"\nPrediction: {'Fraud' if prediction == 1 else 'Legitimate'}")
-                print(f"Fraud Probability: {probability:.2%}")
-            else:
-                print("Please enter valid values!")
-                
+            # Create input array
+            user_data = pd.DataFrame([[current_price, volatility, daily_change, volume_input]],
+                                   columns=['Close', 'HL_PCT', 'PCT_Change', 'Volume'])
+            
+            # Scale input
+            user_data_scaled = scaler.transform(user_data)
+            
+            # Predict
+            prediction = lr_model.predict(user_data_scaled)[0]
+            
+            print(f"\nPredicted Price in {forecast_out} days: ${prediction:.2f}")
+            
         except ValueError:
             print("Please enter valid numbers!")
             
-        if input("\nCheck another transaction? (y/n): ").lower() != 'y':
-            plt.close()
+        if input("\nPredict another scenario? (y/n): ").lower() != 'y':
+            plt.close('all')
             break
 
+# Run the interactive system
 if __name__ == "__main__":
-    main()
+    predict_price()
